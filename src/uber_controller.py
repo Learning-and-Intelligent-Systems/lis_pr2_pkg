@@ -432,7 +432,7 @@ if __name__=="__main__":
         print("Use 'HK' to left/right")
         print("Use 'YI' to up/down" + "\n")
         print("BASE CONTROLS:")        
-        print("Use WASD to move and QE to Yaw" + "\n")
+        print("Use UHJK to move and YI to Yaw" + "\n")
         print("TOGGLE CONTROLS:")
         print("Use 'T' to toggle right arm (default) and left arm")
         print("Use 'SPACE' to toggle torso (default) and head")
@@ -479,23 +479,24 @@ if __name__=="__main__":
                 if fully_tilted:
                     print "Head is fully tilted backwards"
                 else:
-                    print "Tilting head backwards"
+                    print "Tilting head backwards"w
                     uc.command_head( [current_pan, current_tilt - 0.1], 0.8, False)
 
             
         def KEYCODE_A(event):
+            print uc.get_head_pose()
             if uc.head_torso == "torso":
                 print "Invalid Command!"
             else:
                 current = uc.get_head_pose()
                 current_pan = current[0]
                 current_tilt = current[1]
-                fully_panned = (round(current_pan, 3) > np.pi/4 )
+                fully_panned = (round(current_pan, 3) > 2.84 )
                 if fully_panned:
                     print "Head is fully turned to the left"
                 else:
                     print "Turning head to the left"
-                    uc.command_head( [current_pan + 0.01, current_tilt], 0.5, False)
+                    uc.command_head( [current_pan + 0.1, current_tilt], 0.5, False)
 
 
 
@@ -521,18 +522,19 @@ if __name__=="__main__":
                     uc.command_head( [current_pan, current_tilt + 0.1], 0.8, False)
                     
         def KEYCODE_D(event):
+           print uc.get_head_pose()
            if uc.head_torso == "torso":
                 print "Invalid Command!"
            else:
                 current = uc.get_head_pose()
                 current_pan = current[0]
                 current_tilt = current[1]
-                fully_panned= (round(current_pan, 3) < np.pi/4 )
+                fully_panned= (round(current_pan, 3) < -2.84 )
                 if fully_panned:
                     print "Head is fully turned to the right"
                 else:
                     print "Turning head to the right"
-                    uc.command_head( [current_pan - 0.01, current_tilt], 0.5, False)
+                    uc.command_head( [current_pan - 0.1, current_tilt], 0.5, False)
 
 
             
