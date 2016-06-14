@@ -2,7 +2,8 @@
 #Author: Ariel Anders
 import numpy as np
 import rospy
-import roslib; 
+import roslib;
+from Tkinter import *
 roslib.load_manifest("lis_pr2_pkg")
 from pr2_controllers_msgs.msg import \
         JointTrajectoryAction, JointTrajectoryGoal, JointTrajectoryActionGoal,\
@@ -27,9 +28,8 @@ class UberController:
     'torso':(
         'torso_controller/position_joint_action',  
         SingleJointPositionAction),
-    'head':(
-        'head_traj_controller/point_head_action',
-        PointHeadAction),
+    'head':('head_traj_controller/joint_trajectory_action',
+	JointTrajectoryAction),
     'l_gripper': (
         'l_gripper_controller/gripper_action', 
         Pr2GripperCommandAction),
@@ -70,11 +70,13 @@ class UberController:
             rospy.loginfo("%s client started" % item )
         
         for item in self.clients:
-            res = self.clients[item].wait_for_server(rospy.Duration(1.5))
+            res = self.clients[item].wait_for_server(rospy.Duration(2))
             if res:
                 rospy.loginfo("%s done initializing" % item )
             else:
                 rospy.loginfo("Failed to start %s" % item )
+        
+            
         self.rate = rospy.Rate(10)
         rospy.loginfo("subscribing to state messages")
         
@@ -147,13 +149,14 @@ class UberController:
         return head
 
     def get_gripper_event(self, arm):
+        #This may not work until you subscribe to the gripper event 
         msg = self.gripper_event[arm]
         event = msg.trigger_conditions_met or msg.acceleration_event
         return event
 
     def get_accel(self, arm):
         return self.accel[arm]
-
+        
     def get_joint_positions(self, arm):
         pos = [self.joint_positions[p] for p in self.get_joint_names(arm)]
         return pos
@@ -183,28 +186,33 @@ class UberController:
 
     """ 
     ===============================================================
-                Send Commands for Action Clients                
+                Send Comm2ands for Action Clients                
     ===============================================================
     """ 
     def send_command(self, client, goal, blocking=False, timeout=None):
-
-        self.clients[client].send_goal(goal)
-        rospy.sleep(.1)
-        rospy.loginfo("command sent to %s client" % client)
-        status = 0
-
-        if blocking: #XXX why isn't this perfect?
-            end_time = rospy.Time.now() + rospy.Duration(timeout+ .1)
-            while (
-                    (not rospy.is_shutdown()) and\
-                    (rospy.Time.now() < end_time) and\
-                    (status < gs.SUCCEEDED)):
-                status = self.clients[client].action_client.last_status_msg.status_list[-1].status #XXX get to 80
-                self.rate.sleep()
-            if status >gs.SUCCEEDED:
-                rospy.loginfo("goal status achieved.  exiting")
+        if client == 'head':
+            if blocking:
+                self.clients[client].send_goal_and_wait(goal)
             else:
-                rospy.loginfo("ending due to timeout")
+                self.clients[client].send_goal(goal)
+        else:
+            self.clients[client].send_goal(goal)
+            rospy.sleep(.1)
+            rospy.loginfo("command sent to %s client" % client)
+            status = 0
+            if blocking: #XXX why isn't this perfect?
+                end_time = rospy.Time.now() + rospy.Duration(timeout+ .1)
+                while (
+                        (not rospy.is_shutdown()) and\
+                        (rospy.Time.now() < end_time) and\
+                        (status < gs.SUCCEEDED) and\
+                        (type(self.clients[client].action_client.last_status_msg) != type(None))):
+                    status = self.clients[client].action_client.last_status_msg.status_list[-1].status #XXX get to 80
+                    self.rate.sleep()
+                if status >gs.SUCCEEDED:
+                    rospy.loginfo("goal status achieved.  exiting")
+                else:
+                    rospy.loginfo("ending due to timeout")
 
             result = self.clients[client].get_result()
             return result
@@ -224,16 +232,14 @@ class UberController:
         client = "%s_gripper_event"% arm
         return self.send_command(client, goal, blocking, timeout)
 
-    def command_head(self, (x,y,z), frame, blocking, timeout): 
-        #pos is a tuple (x,y,z)
-        goal = PointHeadGoal()
-        goal.target.header.stamp = rospy.Time.now()
-        goal.target.header.frame_id = frame
-        goal.target.point.x = x
-        goal.target.point.y = y
-        goal.target.point.z = z
-        goal.min_duration = rospy.Duration(timeout)
-        return self.send_command('head', goal, blocking, timeout)
+    def command_head(self, angles, time, blocking):
+	    goal = JointTrajectoryGoal()
+	    goal.trajectory.joint_names = ['head_pan_joint', 'head_tilt_joint']
+	    point = JointTrajectoryPoint()
+	    point.positions = angles
+	    point.time_from_start = rospy.Duration(time)
+	    goal.trajectory.points.append(point)
+	    return self.send_command('head', goal, blocking, timeout=time)
     
     def command_gripper(self, arm, position, max_effort, blocking, timeout):
         goal = Pr2GripperCommandGoal()
@@ -249,6 +255,7 @@ class UberController:
     """ 
     # angles is a list of joint angles, times is a list of times from start
     def command_joint_trajectory(self, arm, angles, times, blocking):
+        print angles
         timeout=times[-1] + 1.0
 
         goal = JointTrajectoryGoal()
@@ -285,15 +292,36 @@ class UberController:
      
 """ 
 ============================================================================
-            Uber builds unpon the UberController with set default values
-            for easier use.  See executable in scripts for details on 
+            Uber builds on the UberController with set default values
+            for easier use.  See executable in scripts for deta
+from Tkinter import *
+
+root = Tk()
+
+def callback(event):
+    print "You Pressed it!"
+
+frame = Frame(root, width=100, height=100)
+frame.bind("<F1>", callback)
+frame.pack()
+
+root.mainloop()ils on 
             how to use
 ============================================================================
 """ 
              
 class Uber(UberController):
-    timeout = 3.0
-
+    timeout = 3
+    valid_key=False;
+    arm_ = 'r'
+    arm_tog = {'r':'l',
+               'l':'r'}
+    head_torso = "torso"
+    h_t_tog = {'torso':'head',
+               'head':'torso'}
+    h_t_msg = 'WS (up and down)'
+    h_t_msg_tog = {'torso':'WS (up and down)',
+               'head':'WS (tilt) AD (pan)'}
     def freeze(self, arm):
         goal = JointTrajectoryGoal()
         goal.trajectory.joint_names =self.get_joint_names(arm)
@@ -309,7 +337,7 @@ class Uber(UberController):
         trigger = PR2GripperEventDetectorGoal().command.ACC
         magnitude = 4.0
         self.command_event_detector(arm, trigger, magnitude, True, timeout=timeout)
-        return self.get_gripper_event(arm)
+        return self.get2_gripper_event(arm)
 
     def request_gripper_event(self, arm):
         trigger = PR2GripperEventDetectorGoal().command.ACC
@@ -323,10 +351,10 @@ class Uber(UberController):
         self.command_gripper(arm, 0, 100, blocking=blocking, timeout=self.timeout)
 
     def look_down_center(self, blocking=True):
-        self.command_head( (.1,0, 0), "base_link", blocking=blocking, timeout=self.timeout)
+        self.command_head([0,np.pi/6.], 3, blocking=blocking)
 
     def look_forward(self, blocking=True):
-        self.command_head( (1,0, 1), "base_link", blocking=blocking, timeout=self.timeout)
+        self.command_head([0,0], 3, blocking=blocking)
 
     def lift_torso(self, blocking=True):
         self.command_torso(0.2, blocking=blocking, timeout=self.timeout)
@@ -390,12 +418,190 @@ if __name__=="__main__":
         raw_input("get cartesian pose--right")
         print uc.return_cartesian_pose('r', 'base_link')
 
-  
+    def keyboard_controller():
+        
+    
+
+        
+        print("Welcome to Uber Controller!")
+        print("---------------------------")
+        print("The TK window must always be in focus!" + "\n")
+        print("ARM CONTROLS:")
+        print("Use 'OP' to open/close gripper")
+        print("Use 'UJ' to forward/back")
+        print("Use 'HK' to left/right")
+        print("Use 'YI' to up/down" + "\n")
+        print("BASE CONTROLS:")        
+        print("Use WASD to move and QE to Yaw" + "\n")
+        print("TOGGLE CONTROLS:")
+        print("Use 'T' to toggle right arm (default) and left arm")
+        print("Use 'SPACE' to toggle torso (default) and head")
+        raw_input("Press Enter to begin")
+        print("Reading from keyboard")
+        print("---------------------------")
+
+        root = Tk()
+
+        def KEYCODE_Q(event):
+            print "Now Exiting!"
+            root.quit()
+            
+        def KEYCODE_U(event):
+            print "Moving "  + uc.arm_ + "arm Forward"
+
+        def KEYCODE_J(event):
+            print "Moving "  + uc.arm_ + "arm Back"
+            
+        def KEYCODE_H(event):
+            print "Moving "  + uc.arm_ + "arm Left"
+
+        def KEYCODE_K(event):
+            print "Moving "  + uc.arm_ + "arm Right"
+            
+        def KEYCODE_Y(event):
+            print "Moving "  + uc.arm_ + "arm Up"
+
+        def KEYCODE_W(event):
+            if uc.head_torso == "torso":
+                current = uc.get_torso_pose()
+                fully_up = (round(current, 3) > 0.185)
+                if fully_up:
+                    print "Torso is all the way up!"
+                else:
+                    print "Lifting Torso!"
+                    uc.command_torso(current + 0.005, False, 0.6)
+            else:
+                current = uc.get_head_pose()
+                print current
+                current_pan = current[0]
+                current_tilt = current[1]
+                fully_tilted = (round(current_tilt, 2) == -0.38 )
+                if fully_tilted:
+                    print "Head is fully tilted backwards"
+                else:
+                    print "Tilting head backwards"
+                    uc.command_head( [current_pan, current_tilt - 0.1], 0.8, False)
+
+            
+        def KEYCODE_A(event):
+            if uc.head_torso == "torso":
+                print "Invalid Command!"
+            else:
+                current = uc.get_head_pose()
+                current_pan = current[0]
+                current_tilt = current[1]
+                fully_panned = (round(current_pan, 3) > np.pi/4 )
+                if fully_panned:
+                    print "Head is fully turned to the left"
+                else:
+                    print "Turning head to the left"
+                    uc.command_head( [current_pan + 0.01, current_tilt], 0.5, False)
+
+
+
+        def KEYCODE_S(event):
+            
+             if uc.head_torso == "torso":
+                current = uc.get_torso_pose()
+                fully_down = (round(current, 3) < 0.12)
+                if fully_down:
+                    print "Torso is all the way down!"
+                else:
+                    print "Lowering Torso!"
+                    uc.command_torso(current - 0.005, False, 0.6)
+             else:
+                current = uc.get_head_pose()
+                current_pan = current[0]
+                current_tilt = current[1]
+                fully_tilted = (round(current_tilt, 3) > 1.3 )
+                if fully_tilted:
+                    print "Head is fully tilted forwards"
+                else:
+                    print "Tilting head forwards"
+                    uc.command_head( [current_pan, current_tilt + 0.1], 0.8, False)
+                    
+        def KEYCODE_D(event):
+           if uc.head_torso == "torso":
+                print "Invalid Command!"
+           else:
+                current = uc.get_head_pose()
+                current_pan = current[0]
+                current_tilt = current[1]
+                fully_panned= (round(current_pan, 3) < np.pi/4 )
+                if fully_panned:
+                    print "Head is fully turned to the right"
+                else:
+                    print "Turning head to the right"
+                    uc.command_head( [current_pan - 0.01, current_tilt], 0.5, False)
+
+
+            
+
+        def KEYCODE_I(event):
+            print "Moving "  + uc.arm_ + "arm Down"
+            
+        def KEYCODE_T(event):
+            uc.arm_ = uc.arm_tog[uc.arm_]
+            print "Controlling " + uc.arm_ + "_arm" 
+
+               
+        def KEYCODE_SPACE(event):
+            uc.head_torso = uc.h_t_tog[uc.head_torso]
+            uc.h_t_msg = uc.h_t_msg_tog[uc.head_torso]
+            print "Controlling " + uc.head_torso + " [" + uc.h_t_msg + "]"
+            
+        def KEYCODE_O(event):
+            current = uc.get_gripper_pose(uc.arm_)
+            print current
+            fully_open = (round(current, 3) > 0.085)
+            if fully_open:
+                print "Gripper already fully open!"
+            else:
+                print "Opening " + uc.arm_ + "_gripper!"
+                uc.command_gripper(uc.arm_, current + 0.01, 6, False, 0.4)
+
+
+        def KEYCODE_P(event):
+            current = uc.get_gripper_pose(uc.arm_)
+            print current
+            fully_closed = (round(current, 3) < 0.002)
+            if fully_closed:
+                print "Gripper already fully closed!"
+            else:
+                print "Closing " + uc.arm_ + "_gripper!"
+                uc.command_gripper(uc.arm_, current - 0.01, 6, False, 0.4)
+
+
+        
+                        
+        frame = Frame(root, width=100, height=100)
+        frame.bind("<q>", KEYCODE_Q)
+        frame.bind("<u>", KEYCODE_U)
+        frame.bind("<j>", KEYCODE_J)
+        frame.bind("<h>", KEYCODE_H)
+        frame.bind("<k>", KEYCODE_K)
+        frame.bind("<y>", KEYCODE_Y)
+        frame.bind("<i>", KEYCODE_I)
+        frame.bind("<t>", KEYCODE_T)
+        frame.bind("<o>", KEYCODE_O)
+        frame.bind("<p>", KEYCODE_P)
+        frame.bind("<w>", KEYCODE_W)
+        frame.bind("<a>", KEYCODE_A)
+        frame.bind("<s>", KEYCODE_S)
+        frame.bind("<d>", KEYCODE_D)
+        frame.bind("<space>", KEYCODE_SPACE)
+        frame.pack()
+        frame.focus_set()
+        root.mainloop()
+    
     rospy.init_node("ubertest")
     rospy.loginfo("how to use uber controller")
     uc = Uber()
+    '''
     test_head() 
     test_torso()
     test_gripper()
     test_joint()
-    test_gripper_event()
+    '''
+    keyboard_controller()
+    #test_gripper_event()
