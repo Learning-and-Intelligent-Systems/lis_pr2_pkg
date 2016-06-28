@@ -104,7 +104,7 @@ def macerena():
     
     for i in range(len(macerena_times)):
         m_step(macerena_configs, macerena_times, arm1, arm2, head, i + 1)
-        raw_input()
+
         
 def dab():
     arm1 = Arm('r_arm')

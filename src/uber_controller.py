@@ -373,7 +373,10 @@ class Uber(UberController):
             self.command_joint_pose('l', l, self.timeout, blocking=blocking)
         elif arm =="r":
             self.command_joint_pose('r', r, self.timeout, blocking=blocking)
-
+        
+    def motion_mapping(r_angle, l_angle):
+	uc.command_joint_pose("r", [0]*3 + [r_angle] + [0] * 3, 1, False)
+        uc.command_joint_pose("l", [0]*3 + [l_angle] + [0] * 3, 1, False)
 
     def move_arm_to_side(self, arm, blocking=True):
         l = [ 0.95, 0.0, np.pi/2., -np.pi/2., -np.pi*1.5, -np.pi/2.0, np.pi]
@@ -666,7 +669,8 @@ if __name__=="__main__":
         frame.pack()
         frame.focus_set()
         root.mainloop()
-    
+
+
     rospy.init_node("ubertest")
     rospy.loginfo("how to use uber controller")
     uc = Uber()
@@ -675,9 +679,7 @@ if __name__=="__main__":
     test_torso()
     test_gripper()
     '''
-    test_joint()
     
-    keyboard_controller()
 
 
     #test_gripper_event()
