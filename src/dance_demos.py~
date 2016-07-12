@@ -114,6 +114,10 @@ def macerena():
     for i in range(len(macerena_times)):
         m_step(macerena_configs, macerena_times, arm1, arm2, head, i + 1)
 
+<<<<<<< HEAD
+=======
+        
+>>>>>>> 742da83c6a2a23cd9bc2bb01d4294ca095e43922
 def dab():
     arm1 = Arm('r_arm')
     arm2 = Arm('l_arm')

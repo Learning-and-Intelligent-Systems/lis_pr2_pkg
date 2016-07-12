@@ -638,6 +638,12 @@ if __name__=="__main__":
         frame.bind("<j>", KEYCODE_J)
         frame.bind("<h>", KEYCODE_H)
         frame.bind("<z>", KEYCODE_1)
+<<<<<<< HEAD
+        frame.bind("<x>", KEYCODE_2)
+        frame.bind("<c>", KEYCODE_3)
+        frame.bind("<v>", KEYCODE_4)
+=======
+>>>>>>> 70b687425481dad3ddf1066061f76aa10e42012c
         frame.bind("<k>", KEYCODE_K)
         frame.bind("<y>", KEYCODE_Y)
         frame.bind("<i>", KEYCODE_I)
@@ -659,6 +665,10 @@ if __name__=="__main__":
         frame.focus_set()
         root.mainloop()
     
+    def motion_mapping(r_angle, l_angle):
+	uc.command_joint_pose("r", [0]*3 + [r_angle] + [0] * 3, 1, False)
+        uc.command_joint_pose("l", [0]*3 + [l_angle] + [0] * 3, 1, False)
+
     rospy.init_node("ubertest")
     rospy.loginfo("how to use uber controller")
     uc = Uber()

@@ -1,0 +1,54 @@
+#!/usr/bin/env python  
+import rospy
+import tf as tf
+#import angle_calculator as acalc
+from move_joint import Arm
+import roslib
+import numpy as np
+
+if __name__ == '__main__':
+    rospy.init_node('tf_elbow')
+
+    listener = tf.TransformListener()
+    #Arm naming is inverted in skeltracker 
+    rate = rospy.Rate(10.0)
+    r_arm = Arm('r_arm')
+    l_arm = Arm('l_arm')
+    num = 1
+
+    while not rospy.is_shutdown():
+        try:
+            t = listener.getLatestCommonTime("/left_shoulder_" + str(num) , "/left_elbow_" + str(num) )
+            #(C_rval,c_rrot) = listener.lookupTransform('/left_shoulder_1', '/left_hand_1', t)
+            (B_rval, b_rrot) = listener.lookupTransform("/left_shoulder_" + str(num) , "/left_elbow_" + str(num) , t)
+            #(A_rval, a_rrot) = listener.lookupTransform("/left_elbow_" + str(num) , "/left_hand_" + str(num) , t)
+            #(C_lval,c_lrot) = listener.lookupTransform('/right_shoulder_1', '/right_hand_1', t)
+            (B_lval, b_lrot) = listener.lookupTransform("/right_shoulder_" + str(num) , "/right_elbow_" + str(num) , t)
+            #(A_lval, a_lrot) = listener.lookupTransform("/right_elbow_" + str(num) , "/right_hand_" + str(num) , t)
+            r_roll_joint = [0]
+	    r_pan_angle = [0]
+	    r_lift_angle = [0]
+  	    l_roll_joint = [0]
+	    l_pan_angle = [0]
+	    l_lift_angle = [0]
+	    b_rrot = tf.transformations.euler_from_quaternion(b_rrot)[1]
+	    print b_rrot
+	    r_elbow_angle = -1 * b_rrot[1]
+            #r_elbow_angle = acalc.law_of_cosines(A_rval, B_rval, C_rval) - np.pi 
+            r_arm_angles = r_pan_angle + r_lift_angle + r_roll_joint + [max(r_elbow_angle, -2)] + [0]*3
+            #l_elbow_angle = acalc.law_of_cosines(A_lval, B_lval, C_lval) - np.pi
+	    b_lrot = tf.transformations.euler_from_quaternion(b_lrot)[1]	    
+	    print b_lrot	    
+	    l_elbow_angle = -1 * b_lrot[1]
+            l_arm_angles = l_pan_angle + l_lift_angle + l_roll_joint + [max(l_elbow_angle, -2)] + [0]*3
+            r_arm.move(r_arm_angles)
+            l_arm.move(l_arm_angles) 
+
+        except (tf.Exception):
+            print "Human not detected"
+            continue
+ 
+        rate.sleep()
+        
+          
+        
