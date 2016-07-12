@@ -19,7 +19,7 @@
 
 typedef actionlib::SimpleActionClient< pr2_controllers_msgs::JointTrajectoryAction > TrajClient;
 using namespace std;
-
+//TOPIC: /r_arm_controller/joint_trajectory_action/goalrosto
 //double pi = 3.14;
 double pi = 3.14159265359;
 xn::Context        g_Context;
@@ -291,7 +291,7 @@ int main(int argc, char **argv) {
 	nRetVal = g_Context.StartGeneratingAll();
 	CHECK_RC(nRetVal, "StartGenerating");
 
-	ros::Rate r(10);
+	ros::Rate r(100);
 
 
         ros::NodeHandle pnh("~");
@@ -350,14 +350,16 @@ int main(int argc, char **argv) {
 	l_goal.trajectory.points.push_back(sl_point);
 	r_traj_client_->sendGoal(r_goal); 
 	l_traj_client_->sendGoal(l_goal);
-
-	double rprev_val_1 = -pi/2, rprev_val_2 = 0.0, rprev_val_3 = 0.0, rprev_val_4 = -pi/2; 
+    usleep(9000000);
+	//double rprev_val_1 = -pi/2, rprev_val_2 = 0.0, rprev_val_3 = 0.0, rprev_val_4 = -pi/2; 
 	//double lprev_val_1 = pi/2, lprev_val_2 = 0.0, lprev_val_3 = 0.0, lprev_val_4 = -pi/2; 
 	//double rprev_val_1;
 	//double val = 5.0; 
-	int i_r1 = 0;
-	double r1_avg = -pi/2;
-	std::vector<double> r1_avg_vals (7, -pi/2); 
+	int i = 0;
+	double r3_avg = -pi/2;
+	std::vector<double> r3_avg_vals (7, -pi/2);
+    double r1_avg = 0;
+	std::vector<double> r1_avg_vals (7, 0);  
 	while (ros::ok()) 
 	{
 		g_Context.WaitAndUpdateAll();
@@ -378,24 +380,30 @@ int main(int argc, char **argv) {
 	    r_point.positions = r_angles;
 	    l_point.positions = l_angles;
 	    //r1_avg_vals[i_r1] = angles.at(0);
-	    r1_avg_vals[i_r1] = angles.at(3);
+	    r3_avg_vals[i] = angles.at(3);
+	    r1_avg_vals[i] = angles.at(1);
 	    //std::cout << "Current Angle: " << r1_avg_vals[i_r1] << std::endl;
-	    r1_avg = (std::accumulate(r1_avg_vals.begin(), r1_avg_vals.end(), 0.0)) / 7.0;
+	    r3_avg = (std::accumulate(r3_avg_vals.begin(), r3_avg_vals.end(), 0.0)) / 7.0;
+        r1_avg = (std::accumulate(r1_avg_vals.begin(), r1_avg_vals.end(), 0.0)) / 7.0;
         //std::cout << "Average Pan Value: " << r1_avg << std::endl;
 	    //r_point.positions[0] = min(angles.at(0), max(abs(angles.at(0)), 0.0));
 	    //r_point.positions[0] = angles.at(0);
+	    r_point.positions[0] = -pi/2;
+	    r_point.positions[1] = r1_avg;
 	    //r_point.positions[0] = r1_avg;		
         //r_point.positions[1] = angles.at(1);
         //r_point.positions[2] = angles.at(2);		
-        r_point.positions[3] = r1_avg;		
+        r_point.positions[3] = r3_avg;		
         //r_point.positions[3] = angles.at(3);
 	    //r_point.positions[1] = min(angles.at(1), max(abs(angles.at(1)), 0.0));
 	    //r_point.positions[2] = min(angles.at(2), max(abs(angles.at(2)), 0.0));
 	    //r_point.positions[3] = min(angles.at(3), max(abs(angles.at(3)), 0.0));
+	    /*
 	    rprev_val_1 = r_point.positions[0];
 	    rprev_val_2 = r_point.positions[1];
 	    rprev_val_3 = r_point.positions[2];
 	    rprev_val_4 = r_point.positions[3];
+	    */
 	    l_point.positions[0] = angles.at(7);
 	    l_point.positions[1] = angles.at(8);
 	    l_point.positions[2] = angles.at(9);
@@ -409,14 +417,14 @@ int main(int argc, char **argv) {
 	    //l_traj_client_->sendGoal(l_goal); 
 		
 		
-		i_r1 +=1;
-		if (i_r1 == 6)
+		i += 1;
+		if (i == 6)
 		{
-			i_r1 = 0;
+			i = 0;
 		}
 
         //std::cout << "Index value: " << i_r1 << std::endl;
-		r.sleep();
+		//r.sleep();
 				
 		
 
