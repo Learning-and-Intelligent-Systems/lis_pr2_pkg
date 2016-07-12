@@ -378,14 +378,17 @@ int main(int argc, char **argv) {
 	    r_point.positions = r_angles;
 	    l_point.positions = l_angles;
 	    //r1_avg_vals[i_r1] = angles.at(0);
-	    //r1_avg = (std::accumulate(r1_avg_vals.begin(), r1_avg_vals.end(), 0.0)) / 3.0;
+	    r1_avg_vals[i_r1] = angles.at(3);
+	    //std::cout << "Current Angle: " << r1_avg_vals[i_r1] << std::endl;
+	    r1_avg = (std::accumulate(r1_avg_vals.begin(), r1_avg_vals.end(), 0.0)) / 7.0;
+        //std::cout << "Average Pan Value: " << r1_avg << std::endl;
 	    //r_point.positions[0] = min(angles.at(0), max(abs(angles.at(0)), 0.0));
-	
-	    r_point.positions[0] = angles.at(0);
+	    //r_point.positions[0] = angles.at(0);
 	    //r_point.positions[0] = r1_avg;		
-        r_point.positions[1] = angles.at(1);
-        r_point.positions[2] = angles.at(2);		
-        r_point.positions[3] = angles.at(3);
+        //r_point.positions[1] = angles.at(1);
+        //r_point.positions[2] = angles.at(2);		
+        r_point.positions[3] = r1_avg;		
+        //r_point.positions[3] = angles.at(3);
 	    //r_point.positions[1] = min(angles.at(1), max(abs(angles.at(1)), 0.0));
 	    //r_point.positions[2] = min(angles.at(2), max(abs(angles.at(2)), 0.0));
 	    //r_point.positions[3] = min(angles.at(3), max(abs(angles.at(3)), 0.0));
@@ -406,13 +409,13 @@ int main(int argc, char **argv) {
 	    //l_traj_client_->sendGoal(l_goal); 
 		
 		
-		
-		if (i_r1 = 6)
+		i_r1 +=1;
+		if (i_r1 == 6)
 		{
 			i_r1 = 0;
 		}
-        i_r1 +=1;
-        
+
+        //std::cout << "Index value: " << i_r1 << std::endl;
 		r.sleep();
 				
 		
