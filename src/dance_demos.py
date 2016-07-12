@@ -25,11 +25,19 @@ dab_configs = { 'step1': ([-pi/2] + [0] * 6, [pi/2] + [0] * 6, [0] * 2),
                 'step4': ([-pi/2, -pi/2, 0, -pi, 0, -pi/6, 0 ],[pi/2, 0, pi, -pi, 0, 0, 0 ],[0, 0]),
                 'step5': ([-pi, -0.5, 0, 1.379809650196403, 0, 0.03054326190991663, 0.08614766179720057],[0.53, -0.4, pi/2, -3*pi/4, -0.05935111121127434, -0.6313579395652136, -0.11586425422522062],[0.7340854833888151, 1])}
 
+dab_crab_configs = { 'step1': ([-pi/2] + [0] * 6, [pi/2] + [0] * 6, [0] * 2),
+                'step2': ([-pi, -0.5, 0, 1.379809650196403, 0, 0.03054326190991663, 0.08614766179720057],[0.53, -0.4, pi/2, -3*pi/4, -0.05935111121127434, -0.6313579395652136, -0.11586425422522062], [0.7340854833888151, 1]),
+                'step3': ([pi/8, pi/6, 0, 0, -pi, 0, 0 ],[0, 0, 0, -pi/6, pi, 0, 0 ],[0, 0]),
+                'step4': ([pi/8, pi/6, 0, 0, -pi, 0, 0 ],[-pi/8, 0, 0, 0, pi, 0, 0 ],[0, 0]),
+                'step5': ([-pi/2, -pi/2, 0, -pi, 0, -pi/6, 0 ],[pi/2, 0, pi, -pi, 0, 0, 0 ],[0, 0]),
+                'step6': ([-pi, -0.5, 0, 1.379809650196403, 0, 0.03054326190991663, 0.08614766179720057],[0.53, -0.4, pi/2, -3*pi/4, -0.05935111121127434, -0.6313579395652136, -0.11586425422522062],[0.7340854833888151, 1])}
 
 #'right_arm'
 #'left_arm'
 #'head_pan_joint', 'head_tilt_joint'
-dab_times = [4, 1.2, 1, 0.4, 1]
+dab_times = [4, 1.2, 1, 0.4, 1.5]
+
+dab_crab_times = [4, 1.2, 1, 0.4, 2, 1.5]
 
 class Head:
     def __init__(self):
@@ -91,12 +99,13 @@ def m_step(dance_steps, dance_times, a1,a2, h, n):
     a2.move(dance_steps['step' + str(n)][1], dance_times[i], True)
     h.move(dance_steps['step' + str(n)][2], dance_times[i], False)
 
+#These two functions are not exactly the same 
 def d_step(dance_steps, dance_times, a1,a2, h, n):
     i = n-1
     a1.move(dance_steps['step' + str(n)][0], dance_times[i], False)
     a2.move(dance_steps['step' + str(n)][1], dance_times[i], False)
     h.move(dance_steps['step' + str(n)][2], dance_times[i], False)
-    
+
     
 def macerena():
     arm1 = Arm('r_arm')
@@ -106,7 +115,6 @@ def macerena():
     for i in range(len(macerena_times)):
         m_step(macerena_configs, macerena_times, arm1, arm2, head, i + 1)
 
-        
 def dab():
     arm1 = Arm('r_arm')
     arm2 = Arm('l_arm')
@@ -122,10 +130,27 @@ def dab():
         else:
                 time.sleep(1.5)
 
+        
+def dab_crab():
+    arm1 = Arm('r_arm')
+    arm2 = Arm('l_arm')
+    head = Head()
+    
+    for i in range(len(dab_crab_times)):
+    #for i in range(1):
+        d_step(dab_crab_configs, dab_crab_times, arm1, arm2, head,  i + 1)
+        if i == 0:
+                time.sleep(4)
+        elif i == 3:
+                time.sleep(0.5)
+        else:
+                time.sleep(1.5)
+
 def main():
     response = raw_input('Enter a dance for the PR2!')
     dances = {'dab' : dab,
-              'macerena': macerena}
+              'macerena': macerena,
+	      'dab crab' : dab_crab}
     if response not in dances:
         print ("That dance is currently unavailable!")
     else:
