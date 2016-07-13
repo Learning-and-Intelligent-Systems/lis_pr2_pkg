@@ -21,6 +21,14 @@ typedef actionlib::SimpleActionClient< pr2_controllers_msgs::JointTrajectoryActi
 using namespace std;
 //TOPIC: /r_arm_controller/joint_trajectory_action/goalrosto
 //double pi = 3.14;
+int avg_len = 20;
+double rate_hz = 10;
+//double goal_t = 1/(rate_hz);
+double goal_t = 1.0;
+
+//Moving average length
+//Duration from start
+//How often to send goal 
 double pi = 3.14159265359;
 xn::Context        g_Context;
 xn::DepthGenerator g_DepthGenerator;
@@ -123,6 +131,7 @@ std::vector<double> get_angles(const std::string& frame_id) {
             continue;
 
 
+
         tf::Transform T_cam_head = getTransform(user, XN_SKEL_HEAD,frame_id, "head");
         tf::Transform T_cam_neck = getTransform(user, XN_SKEL_NECK,frame_id, "neck");
         tf::Transform T_cam_torso = getTransform(user, XN_SKEL_TORSO, frame_id, "torso");
@@ -158,7 +167,8 @@ std::vector<double> get_angles(const std::string& frame_id) {
 	tf::Matrix3x3 m1(q1);
 	double rroll, rpitch, ryaw;
 	m1.getRPY(rroll, rpitch, ryaw);
-	tf::Quaternion q2 = T_shoulder_relbow.getRotation();
+	tf::Quaternion q2 = T_shoulder_relbow.getRotation(); 
+
 	tf::Matrix3x3 m2(q2);
 	double x, r_elbow_angle, z;
 	m2.getRPY(x, r_elbow_angle, z);
@@ -186,8 +196,14 @@ std::vector<double> get_angles(const std::string& frame_id) {
    	if (q2[1] < 0.7)
 		r_elbow_angle = pi - r_elbow_angle;
 
-	
-   	if (q1[1] > 0.53)
+
+	if (q4[1] < -0.71 && q4[1] > -0.85)
+	    l_elbow_angle = -1 * (pi + l_elbow_angle);
+	    
+
+	    
+   	if (q1[1] > 0.53) 
+
 		r_pan_angle = -1 * r_pan_angle;
 		//r_roll_angle = r_roll_angle + pi;
     
@@ -199,9 +215,9 @@ std::vector<double> get_angles(const std::string& frame_id) {
 	
 		//r_roll_angle = r_roll_angle + pi;
 	//std::cout << "Elbow Quaternion: " << q2[1] << std::endl;
-	//std::cout << "L-Elbow Quaternion: " << q4[1] << std::endl;
+	std::cout << "L-Elbow Quaternion: " << q4[1] << std::endl;
 	//std::cout << "Elbow Angle: " << r_elbow_angle/(pi) * 180 << std::endl;
-	//std::cout << "L-Elbow Angle: " << l_elbow_angle/(pi) * 180  << std::endl;
+	std::cout << "L-Elbow Angle: " << l_elbow_angle/(pi) * 180  << std::endl;
         
 	all_angles[0] = min(max(r_pan_angle, -2.28), 0.68);
 
@@ -213,9 +229,9 @@ std::vector<double> get_angles(const std::string& frame_id) {
 
 	
 	all_angles[7] = l_pan_angle;
-	all_angles[8] = min(max(r_lift_angle, -0.53), 1.3);
-	//all_angles[9] = l_roll_angle;
-	//all_angles[10] = l_elbow_angle;
+	all_angles[8] = min(max(l_lift_angle, -0.53), 1.3);
+	all_angles[9] = l_roll_angle;
+	all_angles[10] = l_elbow_angle;
 
 	
 	//std::cout << "Right Roll Quaternion: " << q1[0] << std::endl;
@@ -223,7 +239,8 @@ std::vector<double> get_angles(const std::string& frame_id) {
 	//std::cout << "Right Pan Quaternion: " << q1[1] << std::endl;
 	//std::cout << "Right Pan Angle: " << all_angles[0] << std::endl;
 	//std::cout << "Right-Arm Roll: " << r_roll_angle << std::endl;
-
+    //std::cout << "Left Pan Angle: " << all_angles[7] << std::endl;
+	//std::cout << "Left Pan Quaternion: " << q3[1] << std::endl;
 
 	return all_angles;
         //return {r_angles, l_angles, h_angles, base_angles};
@@ -291,7 +308,7 @@ int main(int argc, char **argv) {
 	nRetVal = g_Context.StartGeneratingAll();
 	CHECK_RC(nRetVal, "StartGenerating");
 
-	ros::Rate r(100);
+	ros::Rate r(rate_hz);
 
 
         ros::NodeHandle pnh("~");
@@ -348,18 +365,33 @@ int main(int argc, char **argv) {
 	r_goal.trajectory.points.push_back(sr_point);
     sl_point.time_from_start = ros::Duration(5.0);
 	l_goal.trajectory.points.push_back(sl_point);
-	r_traj_client_->sendGoal(r_goal); 
+	//r_traj_client_->sendGoal(r_goal); 
 	l_traj_client_->sendGoal(l_goal);
-    usleep(9000000);
+    //usleep(9000000);
 	//double rprev_val_1 = -pi/2, rprev_val_2 = 0.0, rprev_val_3 = 0.0, rprev_val_4 = -pi/2; 
 	//double lprev_val_1 = pi/2, lprev_val_2 = 0.0, lprev_val_3 = 0.0, lprev_val_4 = -pi/2; 
 	//double rprev_val_1;
 	//double val = 5.0; 
 	int i = 0;
-	double r3_avg = -pi/2;
-	std::vector<double> r3_avg_vals (7, -pi/2);
+
+	std::vector<double> r0_avg_vals (avg_len, -pi/2);
+	std::vector<double> r1_avg_vals (avg_len, 0);  
+	std::vector<double> r2_avg_vals (avg_len, 0);  
+	std::vector<double> r3_avg_vals (avg_len, -pi/2);
+	std::vector<double> l0_avg_vals (avg_len, pi/2);
+	std::vector<double> l1_avg_vals (avg_len, 0);  
+	std::vector<double> l2_avg_vals (avg_len, 0);  
+	std::vector<double> l3_avg_vals (avg_len, -pi/2);
+    double r0_avg = -pi/2;
     double r1_avg = 0;
-	std::vector<double> r1_avg_vals (7, 0);  
+    double r2_avg = 0;
+    double r3_avg = -pi/2;
+    double l0_avg = pi/2;
+    double l1_avg = 0;
+    double l2_avg = 0;
+    double l3_avg = -pi/2;
+
+
 	while (ros::ok()) 
 	{
 		g_Context.WaitAndUpdateAll();
@@ -380,20 +412,41 @@ int main(int argc, char **argv) {
 	    r_point.positions = r_angles;
 	    l_point.positions = l_angles;
 	    //r1_avg_vals[i_r1] = angles.at(0);
-	    r3_avg_vals[i] = angles.at(3);
+	    
+	    r0_avg_vals[i] = angles.at(0);
 	    r1_avg_vals[i] = angles.at(1);
+	    r2_avg_vals[i] = angles.at(2);
+	    r3_avg_vals[i] = angles.at(3);
+	    l0_avg_vals[i] = angles.at(7);
+	    l1_avg_vals[i] = angles.at(8);
+	    l2_avg_vals[i] = angles.at(9);
+	    l3_avg_vals[i] = angles.at(10);
+
 	    //std::cout << "Current Angle: " << r1_avg_vals[i_r1] << std::endl;
-	    r3_avg = (std::accumulate(r3_avg_vals.begin(), r3_avg_vals.end(), 0.0)) / 7.0;
-        r1_avg = (std::accumulate(r1_avg_vals.begin(), r1_avg_vals.end(), 0.0)) / 7.0;
+	    
+	    r0_avg = (std::accumulate(r0_avg_vals.begin(), r0_avg_vals.end(), 0.0)) / avg_len;
+	    r1_avg = (std::accumulate(r1_avg_vals.begin(), r1_avg_vals.end(), 0.0)) / avg_len;
+	    r2_avg = (std::accumulate(r2_avg_vals.begin(), r2_avg_vals.end(), 0.0)) / avg_len;
+        r3_avg = (std::accumulate(r3_avg_vals.begin(), r3_avg_vals.end(), 0.0)) / avg_len;
+        l0_avg = (std::accumulate(l0_avg_vals.begin(), l0_avg_vals.end(), 0.0)) / avg_len;
+	    l1_avg = (std::accumulate(l1_avg_vals.begin(), l1_avg_vals.end(), 0.0)) / avg_len;
+	    l2_avg = (std::accumulate(l2_avg_vals.begin(), l2_avg_vals.end(), 0.0)) / avg_len;
+        l3_avg = (std::accumulate(l3_avg_vals.begin(), l3_avg_vals.end(), 0.0)) / avg_len;
         //std::cout << "Average Pan Value: " << r1_avg << std::endl;
 	    //r_point.positions[0] = min(angles.at(0), max(abs(angles.at(0)), 0.0));
 	    //r_point.positions[0] = angles.at(0);
-	    r_point.positions[0] = -pi/2;
+	    r_point.positions[0] = r0_avg;
 	    r_point.positions[1] = r1_avg;
+	    r_point.positions[2] = r2_avg;
+	    r_point.positions[3] = r3_avg;
+	    l_point.positions[0] = l0_avg;
+	    l_point.positions[1] = l1_avg;
+	    l_point.positions[2] = l2_avg;
+	    l_point.positions[3] = l3_avg;
+	    //std::cout << l0_avg << std::endl;		
 	    //r_point.positions[0] = r1_avg;		
         //r_point.positions[1] = angles.at(1);
         //r_point.positions[2] = angles.at(2);		
-        r_point.positions[3] = r3_avg;		
         //r_point.positions[3] = angles.at(3);
 	    //r_point.positions[1] = min(angles.at(1), max(abs(angles.at(1)), 0.0));
 	    //r_point.positions[2] = min(angles.at(2), max(abs(angles.at(2)), 0.0));
@@ -404,21 +457,30 @@ int main(int argc, char **argv) {
 	    rprev_val_3 = r_point.positions[2];
 	    rprev_val_4 = r_point.positions[3];
 	    */
+	    /*
 	    l_point.positions[0] = angles.at(7);
 	    l_point.positions[1] = angles.at(8);
 	    l_point.positions[2] = angles.at(9);
 	    l_point.positions[3] = angles.at(10);
-    	r_point.time_from_start = ros::Duration(1);
+    	*/
+    	r_point.time_from_start = ros::Duration(goal_t);
 	    r_goal.trajectory.points.push_back(r_point);
-        l_point.time_from_start = ros::Duration(0.3);
+        l_point.time_from_start = ros::Duration(goal_t);
 	    l_goal.trajectory.points.push_back(l_point);
+
 	    //std::cout << r_point.positions[2] << std::endl;
-	    r_traj_client_->sendGoal(r_goal); 
-	    //l_traj_client_->sendGoal(l_goal); 
+	    
 		
 		
 		i += 1;
-		if (i == 6)
+		
+		if ( i != 0 && i % 4 == 0)
+		{
+           	//r_traj_client_->sendGoal(r_goal); 
+	        l_traj_client_->sendGoal(l_goal); 
+		}
+		
+		if (i == (avg_len - 1))
 		{
 			i = 0;
 		}
