@@ -517,8 +517,8 @@ int main(int argc, char **argv) {
 		j += 1;
 		if (j % mod_freq == 0 && sendG) 
 		{
-            r_traj_client_->sendGoal(r_goal); 
-	        l_traj_client_->sendGoal(l_goal);
+            		r_traj_client_->sendGoal(r_goal); 
+	        	l_traj_client_->sendGoal(l_goal);
 		}
 		
 		if (i == (avg_len - 1))
