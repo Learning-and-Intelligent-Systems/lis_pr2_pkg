@@ -22,9 +22,13 @@ using namespace std;
 //TOPIC: /r_arm_controller/joint_trajectory_action/goalrosto
 //double pi = 3.14;
 int avg_len = 20;
-double rate_hz = 10;
+int rate_hz = 30;
+int freq = 2;
+//1,2,3,5,6,10,15,30
+int mod_freq = rate_hz / freq;
+//Real robot rate is 30; 
 //double goal_t = 1/(rate_hz);
-double goal_t = 1.0;
+double goal_t =  1.0 / freq;
 
 //Moving average length
 //Duration from start
@@ -197,15 +201,18 @@ std::vector<double> get_angles(const std::string& frame_id) {
 		r_elbow_angle = pi - r_elbow_angle;
 
 
-	if (q4[1] < -0.71 && q4[1] > -0.85)
+	if (q4[3] < 0.7)
 	    l_elbow_angle = -1 * (pi + l_elbow_angle);
 	    
 
 	    
    	if (q1[1] > 0.53) 
-
 		r_pan_angle = -1 * r_pan_angle;
 		//r_roll_angle = r_roll_angle + pi;
+    
+    
+    if (q3[1] < -0.53)
+        l_pan_angle = -1 * l_pan_angle; 
     
     
 		
@@ -215,9 +222,11 @@ std::vector<double> get_angles(const std::string& frame_id) {
 	
 		//r_roll_angle = r_roll_angle + pi;
 	//std::cout << "Elbow Quaternion: " << q2[1] << std::endl;
-	std::cout << "L-Elbow Quaternion: " << q4[1] << std::endl;
+    //std::cout << "L-Elbow Quaternion: " << q4[0] << std::endl;
+	//std::cout << "L-Elbow Quaternion: " << q4[3] << std::endl;
+	//std::cout << "L-Elbow Quaternion: " << q4[2] << std::endl;
 	//std::cout << "Elbow Angle: " << r_elbow_angle/(pi) * 180 << std::endl;
-	std::cout << "L-Elbow Angle: " << l_elbow_angle/(pi) * 180  << std::endl;
+	//std::cout << "L-Elbow Angle: " << l_elbow_angle/(pi) * 180  << std::endl;
         
 	all_angles[0] = min(max(r_pan_angle, -2.28), 0.68);
 
@@ -226,7 +235,7 @@ std::vector<double> get_angles(const std::string& frame_id) {
 	all_angles[2] = r_roll_angle;	
 
     all_angles[3] = max((r_elbow_angle - pi), -2.0);
-
+    
 	
 	all_angles[7] = l_pan_angle;
 	all_angles[8] = min(max(l_lift_angle, -0.53), 1.3);
@@ -239,9 +248,9 @@ std::vector<double> get_angles(const std::string& frame_id) {
 	//std::cout << "Right Pan Quaternion: " << q1[1] << std::endl;
 	//std::cout << "Right Pan Angle: " << all_angles[0] << std::endl;
 	//std::cout << "Right-Arm Roll: " << r_roll_angle << std::endl;
-    //std::cout << "Left Pan Angle: " << all_angles[7] << std::endl;
-	//std::cout << "Left Pan Quaternion: " << q3[1] << std::endl;
-
+    //std::cout << "Left Pan Angle: " << all_angles[7]/(pi) * 180 << std::endl;
+    //std::cout << "Left Pan Quaternion 1: " << q3[1] << std::endl;
+    
 	return all_angles;
         //return {r_angles, l_angles, h_angles, base_angles};
 
@@ -365,7 +374,7 @@ int main(int argc, char **argv) {
 	r_goal.trajectory.points.push_back(sr_point);
     sl_point.time_from_start = ros::Duration(5.0);
 	l_goal.trajectory.points.push_back(sl_point);
-	//r_traj_client_->sendGoal(r_goal); 
+	r_traj_client_->sendGoal(r_goal); 
 	l_traj_client_->sendGoal(l_goal);
     //usleep(9000000);
 	//double rprev_val_1 = -pi/2, rprev_val_2 = 0.0, rprev_val_3 = 0.0, rprev_val_4 = -pi/2; 
@@ -390,8 +399,18 @@ int main(int argc, char **argv) {
     double l1_avg = 0;
     double l2_avg = 0;
     double l3_avg = -pi/2;
-
-
+    double r0_pavg = -pi/2;
+    double r1_pavg = 0;
+    double r2_pavg = 0;
+    double r3_pavg = -pi/2;
+    double l0_pavg = pi/2;
+    double l1_pavg = 0;
+    double l2_pavg = 0;
+    double l3_pavg = -pi/2;
+    double val = 0.01;
+    int j = 0;
+    bool sendG = true; 
+    
 	while (ros::ok()) 
 	{
 		g_Context.WaitAndUpdateAll();
@@ -443,6 +462,28 @@ int main(int argc, char **argv) {
 	    l_point.positions[1] = l1_avg;
 	    l_point.positions[2] = l2_avg;
 	    l_point.positions[3] = l3_avg;
+	    
+	    /*
+		if (abs(r0_avg - r0_pavg) > val && abs(r1_avg - r1_pavg) > val && abs(r2_avg - r2_pavg) > val && abs(r3_avg - r3_pavg) > val )
+		{
+		    r0_pavg = r0_avg;
+		    r1_pavg = r1_avg;
+		    r2_pavg = r2_avg;
+		    r3_pavg = r3_avg;    
+		    sendG = true; 
+		}
+		else
+		{
+		    sendG = false; 
+		}
+		*/
+	    /*
+	    std::cout << "Pan Angle Command: " << r0_avg << std::endl;
+	    std::cout << "Lift Angle Command: " << r0_avg << std::endl;
+	    std::cout << "Roll Angle Command: " << r0_avg << std::endl;
+	    std::cout << "Elbow Angle Command: " << r0_avg << std::endl;
+	    */
+	    
 	    //std::cout << l0_avg << std::endl;		
 	    //r_point.positions[0] = r1_avg;		
         //r_point.positions[1] = angles.at(1);
@@ -470,23 +511,27 @@ int main(int argc, char **argv) {
 
 	    //std::cout << r_point.positions[2] << std::endl;
 	    
-		
+
 		
 		i += 1;
-		
-		if ( i != 0 && i % 4 == 0)
+		j += 1;
+		if (j % mod_freq == 0 && sendG) 
 		{
-           	//r_traj_client_->sendGoal(r_goal); 
-	        l_traj_client_->sendGoal(l_goal); 
+            r_traj_client_->sendGoal(r_goal); 
+	        l_traj_client_->sendGoal(l_goal);
 		}
 		
 		if (i == (avg_len - 1))
 		{
 			i = 0;
 		}
+		if (j == rate_hz)
+		{
+		    j = 0;
+		}
 
         //std::cout << "Index value: " << i_r1 << std::endl;
-		//r.sleep();
+		//r.sleep();100
 				
 		
 
