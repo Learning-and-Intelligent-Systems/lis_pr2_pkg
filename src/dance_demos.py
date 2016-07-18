@@ -1,6 +1,6 @@
 #!/bin/env python
 import roslib; 
-#roslib.load_manifest('pr2_gripper_reactive_approach')
+roslib.load_manifest('pr2_gripper_reactive_approach')
 from pr2_controllers_msgs.msg import JointTrajectoryAction, JointTrajectoryGoal
 from trajectory_msgs.msg import JointTrajectoryPoint
 import actionlib

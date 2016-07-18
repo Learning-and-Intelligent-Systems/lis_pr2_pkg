@@ -443,6 +443,7 @@ if __name__=="__main__":
 	pose_num = raw_input("Enter a pose number: ")
 	while (pose_num != 'e'):
 		poses = jap.joint_angles
+		uc.look_forward()
 		print len(poses)
 		if int(pose_num) in range(len(poses) + 1):
 			uc.command_joint_pose("l", poses['pose_'+ pose_num][0], 3, False)
@@ -673,12 +674,11 @@ if __name__=="__main__":
 <<<<<<< HEAD
     '''
     
-=======
+    '''
     test_joint()
     '''    
 
     pose_manager()
->>>>>>> 70b687425481dad3ddf1066061f76aa10e42012c
 
 
     #test_gripper_event()

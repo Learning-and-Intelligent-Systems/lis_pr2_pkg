@@ -23,7 +23,7 @@ using namespace std;
 //double pi = 3.14;
 int avg_len = 20;
 int rate_hz = 30;
-int freq = 15;
+int freq = 2;
 //1,2,3,5,6,10,15,30
 int mod_freq = rate_hz / freq;
 //Real robot rate is 30; 
@@ -159,6 +159,9 @@ std::vector<double> get_angles(const std::string& frame_id) {
         //tf::Transform T_cam_lknee = getTransform(user, XN_SKEL_RIGHT_KNEE, frame_id, "right_knee");
         //tf::Transform T_cam_lfoot = getTransform(user, XN_SKEL_RIGHT_FOOT, frame_id, "right_foot");
 
+
+
+	
 
 	
 	tf::Transform T_torso_rshoulder = T_cam_torso.inverse() * T_cam_rshoulder;
@@ -326,25 +329,25 @@ int main(int argc, char **argv) {
 	TrajClient* l_traj_client_;
 	l_traj_client_ = new TrajClient("l_arm_controller/joint_trajectory_action", true);	
 
-    pr2_controllers_msgs::JointTrajectoryGoal r_goal;
-    r_goal.trajectory.header.stamp = ros::Time::now();
+    	pr2_controllers_msgs::JointTrajectoryGoal r_goal;
+    	r_goal.trajectory.header.stamp = ros::Time::now();
    	r_goal.trajectory.joint_names.push_back("r_shoulder_pan_joint");
-    r_goal.trajectory.joint_names.push_back("r_shoulder_lift_joint");
-    r_goal.trajectory.joint_names.push_back("r_upper_arm_roll_joint");
-    r_goal.trajectory.joint_names.push_back("r_elbow_flex_joint");
-   	r_goal.trajectory.joint_names.push_back("r_forearm_roll_joint");
-    r_goal.trajectory.joint_names.push_back("r_wrist_flex_joint");
-    r_goal.trajectory.joint_names.push_back("r_wrist_roll_joint");
+    	r_goal.trajectory.joint_names.push_back("r_shoulder_lift_joint");
+    	r_goal.trajectory.joint_names.push_back("r_upper_arm_roll_joint");
+    	r_goal.trajectory.joint_names.push_back("r_elbow_flex_joint");
+    	r_goal.trajectory.joint_names.push_back("r_forearm_roll_joint");
+    	r_goal.trajectory.joint_names.push_back("r_wrist_flex_joint");
+    	r_goal.trajectory.joint_names.push_back("r_wrist_roll_joint");
 
-    pr2_controllers_msgs::JointTrajectoryGoal l_goal;
-    l_goal.trajectory.header.stamp = ros::Time::now();
+    	pr2_controllers_msgs::JointTrajectoryGoal l_goal;
+    	l_goal.trajectory.header.stamp = ros::Time::now();
    	l_goal.trajectory.joint_names.push_back("l_shoulder_pan_joint");
-    l_goal.trajectory.joint_names.push_back("l_shoulder_lift_joint");
-    l_goal.trajectory.joint_names.push_back("l_upper_arm_roll_joint");
-    l_goal.trajectory.joint_names.push_back("l_elbow_flex_joint");
-    l_goal.trajectory.joint_names.push_back("l_forearm_roll_joint");
-    l_goal.trajectory.joint_names.push_back("l_wrist_flex_joint");
-   	l_goal.trajectory.joint_names.push_back("l_wrist_roll_joint");
+    	l_goal.trajectory.joint_names.push_back("l_shoulder_lift_joint");
+    	l_goal.trajectory.joint_names.push_back("l_upper_arm_roll_joint");
+    	l_goal.trajectory.joint_names.push_back("l_elbow_flex_joint");
+    	l_goal.trajectory.joint_names.push_back("l_forearm_roll_joint");
+    	l_goal.trajectory.joint_names.push_back("l_wrist_flex_joint");
+    	l_goal.trajectory.joint_names.push_back("l_wrist_roll_joint");
 
 	std::cout << "Please go to PSI Pose" << std::endl;
     trajectory_msgs::JointTrajectoryPoint sr_point;
