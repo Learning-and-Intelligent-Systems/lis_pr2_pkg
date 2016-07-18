@@ -199,7 +199,7 @@ std::vector<double> get_angles(const std::string& frame_id) {
 
 
 	if (q4[3] < 0.7)
-	    l_elbow_angle = -1 * (pi + l_elbow_angle);
+		l_elbow_angle = -1 * (pi + l_elbow_angle);
 	    
 
 	    
@@ -208,8 +208,8 @@ std::vector<double> get_angles(const std::string& frame_id) {
 		//r_roll_angle = r_roll_angle + pi;
     
     
-    if (q3[1] < -0.53)
-        l_pan_angle = -1 * l_pan_angle; 
+    	if (q3[1] < -0.53)
+        	l_pan_angle = -1 * l_pan_angle; 
     
     
 		
@@ -227,11 +227,11 @@ std::vector<double> get_angles(const std::string& frame_id) {
         
 	all_angles[0] = min(max(r_pan_angle, -2.28), 0.68);
 
-    all_angles[1] = min(max(r_lift_angle, -0.53), 1.3);
+    	all_angles[1] = min(max(r_lift_angle, -0.53), 1.3);
 
 	all_angles[2] = r_roll_angle;	
 
-    all_angles[3] = max((r_elbow_angle - pi), -2.0);
+    	all_angles[3] = max((r_elbow_angle - pi), -2.0);
     
 	
 	all_angles[7] = l_pan_angle;
@@ -347,8 +347,8 @@ int main(int argc, char **argv) {
    	l_goal.trajectory.joint_names.push_back("l_wrist_roll_joint");
 
 	std::cout << "Please go to PSI Pose" << std::endl;
-    trajectory_msgs::JointTrajectoryPoint sr_point;
-    trajectory_msgs::JointTrajectoryPoint sl_point;
+        trajectory_msgs::JointTrajectoryPoint sr_point;
+        trajectory_msgs::JointTrajectoryPoint sl_point;
 	std::vector<double> sr_angles(7);
 	std::vector<double> sl_angles(7);
 	sr_point.positions = sr_angles;
@@ -369,7 +369,7 @@ int main(int argc, char **argv) {
 	sl_point.positions[6] = 0.0;
 	sr_point.time_from_start = ros::Duration(5.0);
 	r_goal.trajectory.points.push_back(sr_point);
-    sl_point.time_from_start = ros::Duration(5.0);
+    	sl_point.time_from_start = ros::Duration(5.0);
 	l_goal.trajectory.points.push_back(sl_point);
 	r_traj_client_->sendGoal(r_goal); 
 	l_traj_client_->sendGoal(l_goal);
@@ -443,12 +443,12 @@ int main(int argc, char **argv) {
 	    r0_avg = (std::accumulate(r0_avg_vals.begin(), r0_avg_vals.end(), 0.0)) / avg_len;
 	    r1_avg = (std::accumulate(r1_avg_vals.begin(), r1_avg_vals.end(), 0.0)) / avg_len;
 	    r2_avg = (std::accumulate(r2_avg_vals.begin(), r2_avg_vals.end(), 0.0)) / avg_len;
-        r3_avg = (std::accumulate(r3_avg_vals.begin(), r3_avg_vals.end(), 0.0)) / avg_len;
-        l0_avg = (std::accumulate(l0_avg_vals.begin(), l0_avg_vals.end(), 0.0)) / avg_len;
+	    r3_avg = (std::accumulate(r3_avg_vals.begin(), r3_avg_vals.end(), 0.0)) / avg_len;
+            l0_avg = (std::accumulate(l0_avg_vals.begin(), l0_avg_vals.end(), 0.0)) / avg_len;
 	    l1_avg = (std::accumulate(l1_avg_vals.begin(), l1_avg_vals.end(), 0.0)) / avg_len;
 	    l2_avg = (std::accumulate(l2_avg_vals.begin(), l2_avg_vals.end(), 0.0)) / avg_len;
-        l3_avg = (std::accumulate(l3_avg_vals.begin(), l3_avg_vals.end(), 0.0)) / avg_len;
-        //std::cout << "Average Pan Value: " << r1_avg << std::endl;
+            l3_avg = (std::accumulate(l3_avg_vals.begin(), l3_avg_vals.end(), 0.0)) / avg_len;
+            //std::cout << "Average Pan Value: " << r1_avg << std::endl;
 	    //r_point.positions[0] = min(angles.at(0), max(abs(angles.at(0)), 0.0));
 	    //r_point.positions[0] = angles.at(0);
 	    r_point.positions[0] = r0_avg;
@@ -483,9 +483,9 @@ int main(int argc, char **argv) {
 	    
 	    //std::cout << l0_avg << std::endl;		
 	    //r_point.positions[0] = r1_avg;		
-        //r_point.positions[1] = angles.at(1);
-        //r_point.positions[2] = angles.at(2);		
-        //r_point.positions[3] = angles.at(3);
+            //r_point.positions[1] = angles.at(1);
+            //r_point.positions[2] = angles.at(2);		
+            //r_point.positions[3] = angles.at(3);
 	    //r_point.positions[1] = min(angles.at(1), max(abs(angles.at(1)), 0.0));
 	    //r_point.positions[2] = min(angles.at(2), max(abs(angles.at(2)), 0.0));
 	    //r_point.positions[3] = min(angles.at(3), max(abs(angles.at(3)), 0.0));
@@ -501,9 +501,9 @@ int main(int argc, char **argv) {
 	    l_point.positions[2] = angles.at(9);
 	    l_point.positions[3] = angles.at(10);
     	*/
-    	r_point.time_from_start = ros::Duration(goal_t);
+    	    r_point.time_from_start = ros::Duration(goal_t);
 	    r_goal.trajectory.points.push_back(r_point);
-        l_point.time_from_start = ros::Duration(goal_t);
+            l_point.time_from_start = ros::Duration(goal_t);
 	    l_goal.trajectory.points.push_back(l_point);
 
 	    //std::cout << r_point.positions[2] << std::endl;
@@ -514,8 +514,8 @@ int main(int argc, char **argv) {
 		j += 1;
 		if (j % mod_freq == 0 && sendG) 
 		{
-            r_traj_client_->sendGoal(r_goal); 
-	        l_traj_client_->sendGoal(l_goal);
+            		r_traj_client_->sendGoal(r_goal); 
+	        	l_traj_client_->sendGoal(l_goal);
 		}
 		
 		if (i == (avg_len - 1))

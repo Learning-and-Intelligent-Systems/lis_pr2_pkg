@@ -9,7 +9,7 @@ import time
 
 pi = 3.14159
 
-macerena_configs = {'step1': ([0, 0, 0, 0, -pi, 0, 0 ],[0, 0, 0, 0, pi, 0, 0 ],[0] * 2 ), 
+macarena_configs = {'step1': ([0, 0, 0, 0, -pi, 0, 0 ],[0, 0, 0, 0, pi, 0, 0 ],[0] * 2 ), 
                     'step2': ([0]*7, [0]*7,[0] * 2), 
                     'step3': ([0, 0, -pi/3., -2*pi/3., -pi/4., 0, 0 ],[0, 0, pi/3., -pi/2., pi/4, 0, 0 ],[0] * 2 ),
                     'step4': ([-pi/2, -pi/2, 0, -pi, 0, 0, 0 ],[pi/2, -pi/2, 0, -pi, 0, 0, 0 ] , [0] * 2),
@@ -17,7 +17,7 @@ macerena_configs = {'step1': ([0, 0, 0, 0, -pi, 0, 0 ],[0, 0, 0, 0, pi, 0, 0 ],[
                     'step6': ([-pi/2, pi/14, -8*pi/9, -pi, 0, 0, 0 ],[pi/2, pi/14, 8*pi/9, -7*pi/8, 0, 0, 0 ],[0] * 2 ),
                     'step7': ([-pi/2, pi/14, -8*pi/9, -pi, 0, 0, pi ],[pi/2, pi/14, 8*pi/9, -7*pi/8, 0, 0, pi ],[0] * 2 )}
 
-macerena_times = [3, 2, 2, 2.5, 2.5, 1.5, 1]
+macarena_times = [3, 2, 2, 2.5, 2.5, 1.5, 1]
 
 dab_configs = { 'step1': ([-pi/2] + [0] * 6, [pi/2] + [0] * 6, [0] * 2),
                 'step2': ([-pi, -0.5, 0, 1.379809650196403, 0, 0.03054326190991663, 0.08614766179720057],[0.53, -0.4, pi/2, -3*pi/4, -0.05935111121127434, -0.6313579395652136, -0.11586425422522062], [0.7340854833888151, 1]),
@@ -107,7 +107,7 @@ def d_step(dance_steps, dance_times, a1,a2, h, n):
     h.move(dance_steps['step' + str(n)][2], dance_times[i], False)
 
     
-def macerena():
+def macarena():
     arm1 = Arm('r_arm')
     arm2 = Arm('l_arm')
     head = Head()
@@ -149,7 +149,7 @@ def dab_crab():
 def main():
     response = raw_input('Enter a dance for the PR2!')
     dances = {'dab' : dab,
-              'macerena': macerena,
+              'macarena': macarena,
 	      'dab crab' : dab_crab}
     if response not in dances:
         print ("That dance is currently unavailable!")
