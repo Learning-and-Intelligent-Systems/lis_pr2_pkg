@@ -1,9 +1,8 @@
 # lis_pr2_pkg
-lis_pr2_pkg
 
 
 This is a python package that uses rospy with most of the default pr2_controllers. 
-It works for fuerte and indigo
+
 
 launch/ contains a launch file to start the teleop_joystick controller, pr2_gripper_sensor_action, and kinect.
 
