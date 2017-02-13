@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #Author: Ariel Anders
+from lis_pr2_pkg.uber_controller import Uber
+import rospy
 
 def test_gripper():
     rospy.loginfo("testing open gripper commands")
@@ -47,10 +49,17 @@ def test_get_state():
     raw_input("get cartesian pose--right")
     print uc.return_cartesian_pose('r', 'base_link')
 
+def test_custom_joint():
+    rospy.loginfo("sending joints to 0!")
+    uc.command_joint_pose('l', [0]*7, time=2, blocking=False)
+    uc.command_joint_pose('r', [0]*7, time=2, blocking=True)
+
+
 
 rospy.init_node("ubertest")
 rospy.loginfo("how to use uber controller")
 uc = Uber()
+test_custom_joint()
 test_head() 
 test_torso()
 test_gripper()

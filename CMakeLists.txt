@@ -30,7 +30,6 @@ catkin_python_setup()
 
 catkin_package(
     CATKIN_DEPENDS  roscpp angles filters tf tf_conversions  eigen_conversions pluginlib actionlib std_msgs geometry_msgs diagnostic_msgs trajectory_msgs pr2_controllers_msgs pr2_controller_interface pr2_controller_manager kdl_parser pr2_mechanism_model control_toolbox realtime_tools message_filters control_msgs  message_runtime rospy geometry_msgs std_msgs actionlib_msgs genmsg
-    INCLUDE_DIRS include
     LIBRARIES lis_pr2_pkg
 )
 

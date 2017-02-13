@@ -1,7 +1,7 @@
 <launch>
   <arg name="kinect_camera_name" default="head_mount_kinect" />
 
-  <include file="$(find pr2_teleop)/teleop_joystick.launch"/>
+  <include file="$(find pr2_teleop)/launch/teleop_joystick.launch"/>
 
   <include file="$(find pr2_gripper_sensor_action)/launch/pr2_gripper_sensor_actions.launch"/>
 
@@ -9,7 +9,9 @@
   <include file="$(find openni_launch)/launch/openni.launch">
     <arg name="camera" value="$(arg kinect_camera_name)"/>
     <arg name="rgb_frame_id" value= "$(arg kinect_camera_name)_rgb_optical_frame" />
-    <arg name="depth_frame_id" value= "$(arg kinect_camera_name)_rgb_optical_frame" />
+    <arg name="depth_frame_id" value= "$(arg kinect_camera_name)_depth_optical_frame" />
+    <arg name="depth_registration" value="true"/>
+    <arg name="publish_tf" value="false"/>
   </include>
     
 
