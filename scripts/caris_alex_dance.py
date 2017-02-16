@@ -98,7 +98,27 @@ def rumble():
         #else:
         #        time.sleep(1.5)
 
+def get_dance_configs():
+
+    done = False
+    while not done:
+        raw_input('When robot is in desired config press ENTER')
+
+        r_config = uc.get_joint_positions('r')
+        print 'The current right arm config is: ', r_config
+
+        l_config = uc.get_joint_positions('l')
+        print 'The current left arm config is: ', l_config
+
+        head_config = uc.get_head_pose()
+        print 'The current head config is: ', config
+
+        answer = raw_input('Enter y if done, else hit ENTER')
+        if answer == 'y':
+            done = True
+
 if __name__ == '__main__':
 	rospy.init_node('joint_position_tester')
-    raw_input('Are you ready to rumble??? (Hit Enter)')
-	rumble()
+    raw_input('Are you ready to rumble??? (Hit ENTER)')
+	#rumble()
+    get_dance_configs()
