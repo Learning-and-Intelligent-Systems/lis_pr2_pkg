@@ -19,9 +19,10 @@ uc.lift_torso()
 if __name__ == "__main__":
     rospy.init_node("alldances")
     uc = Uber()
+    uc.look_forward()
     uc.lift_torso()
 
-    dances = ["caelan_clement", "caris_alex", "rohan_ferran"]
+    dances = ["michael","caelan_clement", "caris_alex", "rohan_ferran"]
 
     for dance in dances:
         # reset arms

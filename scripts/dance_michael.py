@@ -157,5 +157,6 @@ def main():
     
 
 if __name__ == '__main__':
-	rospy.init_node('joint_position_tester')
-	main()
+    rospy.init_node('joint_position_tester')
+    dab()
+	#main()
