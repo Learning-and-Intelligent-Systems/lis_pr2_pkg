@@ -1,0 +1,10 @@
+<launch>
+    <arg name="image" default="/head_mount_kinect/rgb/image_rect_color"/>
+    <arg name="nodename" default="recorder"/>
+    
+    <arg name="filename" default="$(find lis_pr2_pkg)/test.avi"/>
+
+    <node name="$(arg nodename)" pkg="image_view" type="video_recorder" output="screen" 
+        args = "image:=$(arg image) _filename:=$(arg filename)  _fps:=60  _max_depth_range:=0">
+    </node>
+</launch>
