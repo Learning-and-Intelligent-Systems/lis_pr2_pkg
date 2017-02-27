@@ -22,7 +22,7 @@ if __name__ == "__main__":
     uc.look_forward()
     uc.lift_torso()
 
-    dances = ["michael","caelan_clement", "caris_alex", "rohan_ferran"]
+    dances = ["michael","zi", "loc","caelan_clement", "caris_alex", "rohan_ferran"]
 
     for dance in dances:
         # reset arms

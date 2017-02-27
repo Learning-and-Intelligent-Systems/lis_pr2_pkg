@@ -22,7 +22,7 @@ posefile = '/home/demo/catkin_ws/src/lis_pr2_pkg/scripts/zi_poses.csv'
 # record positions
 joint_poses = []
 cnt = 0
-while is_record and cnt < 10:
+while (is_record and cnt < 10) and not rospy.is_shutdown():
   joints = []
   joints += uc.get_joint_positions('l')
   joints += uc.get_joint_positions('r')
