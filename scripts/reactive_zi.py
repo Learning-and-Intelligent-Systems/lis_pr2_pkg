@@ -20,7 +20,7 @@ class Detector:
         rospy.loginfo("Detector initialized.")
 
     def processImage(self, image_msg):
-        #self.sub_image.unregister()
+        self.sub_image.unregister()
         image_cv = self.bridge.imgmsg_to_cv2(image_msg)
         face_cascade = cv2.CascadeClassifier('/home/demo/zi/haarcascade_frontalface_default.xml')
         eye_cascade = cv2.CascadeClassifier('/home/demo/zi/haarcascade_eye.xml')
@@ -35,24 +35,14 @@ class Detector:
                 cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
         if len(faces):
             rospy.loginfo("Face detected.")
-            #cv2.imshow('image',image_cv)
-            #cv2.waitKey(0)
-            #cv2.destroyAllWindows()
+            cv2.imshow('image',image_cv)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
             self.pub.publish("Detected %d faces." % len(faces))
         #cv2.imshow('image', image_cv)
         #cv2.waitKey(0)
         #cv2.destroyAllWindows()
         #cv2.imwrite('/home/demo/tmp.png',image_cv)
-
-
-speak = lambda x: os.system("rosrun sound_play say.py '%s'" % x)
-
-class Sub:
-    def __init__(self):
-        self.sub = rospy.Subscriber("ifdetect", String, self.cb)
-
-    def cb(self, s):
-        speak(s)
 rospy.init_node("test_reactive")
 rospy.loginfo('start testing reactive controller')
 
@@ -65,7 +55,25 @@ uc.command_head([-np.pi/3,np.pi/8],3,True)
 #uc.look_forward()
 
 det = Detector()
+speak = lambda x: os.system("rosrun sound_play say.py '%s'" % x)
+
+class Sub:
+    def __init__(self):
+        self.sub = rospy.Subscriber("ifdetect", String, self.cb)
+        self.detected = False
+        
+    def cb(self, s):
+        self.sub.unregister()
+        #speak("hello there")
+        self.detected = True
+        uc.open_gripper()
+        uc.close_gripper()
+        uc.open_gripper()
+        
+
+
 sub = Sub()
-#while not rospy.is_shutdown():
-#    uc.command_head([np.random.uniform(-np.pi/2,np.pi/2), 0], 3, True)
+
+while not rospy.is_shutdown() and not sub.detected:
+    uc.command_head([np.random.uniform(-np.pi/2,np.pi/2), np.pi/8], 3, True)
 rospy.spin()
