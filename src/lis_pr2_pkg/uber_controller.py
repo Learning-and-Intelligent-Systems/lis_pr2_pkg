@@ -69,7 +69,7 @@ class UberController:
             rospy.loginfo("%s client started" % item )
         
         for item in self.clients:
-            res = self.clients[item].wait_for_server(rospy.Duration(2))
+            res = self.clients[item].wait_for_server(rospy.Duration(.1))
             if res:
                 rospy.loginfo("%s done initializing" % item )
             else:
