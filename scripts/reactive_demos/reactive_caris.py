@@ -4,7 +4,9 @@ from pr2_msgs.msg import AccelerometerState as AS
 import pdb
 from lis_pr2_pkg.uber_controller import Uber
 
-rospy.init_node("demo_accel")
+#XXX add description of this code
+
+rospy.init_node("demo_accel")   #XXX use descriptive node name
 
 # discussed message type
 test_msg = AS()
@@ -12,10 +14,10 @@ uc = Uber()
 
 class Accel():
     def __init__(self):
-        self.sub= rospy.Subscriber("accelerometer/r_gripper_motor", AS, self.cb, queue_size=1)
-	self.last_point = None 
+        self.sub= rospy.Subscriber("accelerometer/r_gripper_motor", AS, self.cb, queue_size=1) #XXX line is over 80 characters
+	self.last_point = None  #XXX look at using numpy for cooler filtering 
 	self.new_point = None
-	self.delta = 2
+	self.delta = 2 #XXXa what does delta do?
 	#uc.open_gripper('r')
 
     def cb (self, data):
