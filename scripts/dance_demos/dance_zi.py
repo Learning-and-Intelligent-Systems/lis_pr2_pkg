@@ -17,7 +17,7 @@ uc.move_arm_to_side("l")
 uc.move_arm_to_side("r")
 uc.look_forward()
 
-posefile = '/home/demo/catkin_ws/src/lis_pr2_pkg/scripts/zi_poses.csv'
+posefile = 'zi_poses.csv'
 
 # record positions
 joint_poses = []
