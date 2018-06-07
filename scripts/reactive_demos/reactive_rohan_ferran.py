@@ -6,8 +6,8 @@ import numpy as np
 from lis_pr2_pkg.uber_controller import UberController
 
 ROLL = 5
-L_BASE = 2950
-R_BASE = 1890
+L_BASE = 1700
+R_BASE = 2300
 CLOSE = 1.2
 STOP = 1.4
 

@@ -20,7 +20,7 @@ class Detector:
         rospy.loginfo("Detector initialized.")
 
     def processImage(self, image_msg):
-        self.sub_image.unregister()
+        #self.sub_image.unregister()
         image_cv = self.bridge.imgmsg_to_cv2(image_msg)
         face_cascade = cv2.CascadeClassifier('/home/demo/zi/haarcascade_frontalface_default.xml')
         eye_cascade = cv2.CascadeClassifier('/home/demo/zi/haarcascade_eye.xml')
@@ -35,9 +35,9 @@ class Detector:
                 cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
         if len(faces):
             rospy.loginfo("Face detected.")
-            cv2.imshow('image',image_cv)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+            #cv2.imshow('image',image_cv)
+            #cv2.waitKey(0)
+            #cv2.destroyAllWindows()
             self.pub.publish("Detected %d faces." % len(faces))
         #cv2.imshow('image', image_cv)
         #cv2.waitKey(0)
@@ -64,7 +64,7 @@ class Sub:
         
     def cb(self, s):
         self.sub.unregister()
-        #speak("hello there")
+        speak("hello there")
         self.detected = True
         uc.open_gripper()
         uc.close_gripper()
