@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+<<<<<<< HEAD
+=======
+#Author: Nishad Gothoskar
+>>>>>>> 70b05b347a0fc913abaec2e2ec6600532ebad03d
 import rospy
 import cv2
 import numpy as np
@@ -9,7 +13,11 @@ from pr2_controllers_msgs.msg import JointTrajectoryAction, JointTrajectoryGoal
 from trajectory_msgs.msg import JointTrajectoryPoint
 import actionlib
 
+<<<<<<< HEAD
 rospy.init_node("head_tracking")
+=======
+rospy.init_node("red_tracking")
+>>>>>>> 70b05b347a0fc913abaec2e2ec6600532ebad03d
 
 head_limits = np.array([[-2.0, -.5], [2.0, .5]])
 dx = -0.06/320
@@ -42,7 +50,10 @@ class HeadListener:
 			Image,
 			self.call_back,
 			queue_size = 1)
+<<<<<<< HEAD
 		self.pub = rospy.Publisher('/head_tracking/face_detections', Image)
+=======
+>>>>>>> 70b05b347a0fc913abaec2e2ec6600532ebad03d
 		
 	def call_back(self, data):
 		try:
@@ -70,10 +81,13 @@ class HeadListener:
 		self.head_pos = head_pos
 		self.head_sac.move(head_pos, 0.2, False)
 
+<<<<<<< HEAD
 		try:
 			self.pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
 		except CvBridgeError as e:
 			print(e)
 
+=======
+>>>>>>> 70b05b347a0fc913abaec2e2ec6600532ebad03d
 HeadListener()
 rospy.spin()

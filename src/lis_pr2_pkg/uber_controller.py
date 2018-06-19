@@ -2,6 +2,7 @@
 #Author: Ariel Anders
 import numpy as np
 import rospy
+import tf
 
 from pr2_controllers_msgs.msg import \
         JointTrajectoryAction, JointTrajectoryGoal, JointTrajectoryActionGoal,\
@@ -17,10 +18,9 @@ from pr2_gripper_sensor_msgs.msg import * #XXX fix
 from pr2_mechanism_msgs.srv import SwitchController, ListControllers
 from trajectory_msgs.msg import JointTrajectoryPoint
 from geometry_msgs.msg import Twist
-from actionlib import SimpleActionClient as SAC
+from actionlib import SimpleActionClient
 from sensor_msgs.msg import JointState
-import tf
-from actionlib_msgs.msg import GoalStatus as gs
+from actionlib_msgs.msg import GoalStatus
 
 class UberController:
     simple_clients = {
@@ -65,7 +65,7 @@ class UberController:
 
         rospy.loginfo("starting simple action clients")
         for item in self.simple_clients:
-            self.clients[item]= SAC(*self.simple_clients[item]) 
+            self.clients[item]= SimpleActionClient(*self.simple_clients[item]) 
             rospy.loginfo("%s client started" % item )
         
         for item in self.clients:
@@ -209,11 +209,11 @@ class UberController:
                 while (
                         (not rospy.is_shutdown()) and\
                         (rospy.Time.now() < end_time) and\
-                        (status < gs.SUCCEEDED) and\
+                        (status < GoalStatus.SUCCEEDED) and\
                         (type(self.clients[client].action_client.last_status_msg) != type(None))):
                     status = self.clients[client].action_client.last_status_msg.status_list[-1].status #XXX get to 80
                     self.rate.sleep()
-                if status >gs.SUCCEEDED:
+                if status >= GoalStatus.SUCCEEDED:
                     rospy.loginfo("goal status achieved.  exiting")
                 else:
                     rospy.loginfo("ending due to timeout")
@@ -317,6 +317,9 @@ class Uber(UberController):
         if timeout == None: timeout = self.timeout
         #trigger = PR2GripperEventDetectorGoal().command.FINGER_SIDE_IMPACT_OR_ACC
         trigger = PR2GripperEventDetectorGoal().command.ACC
+        #trigger = PR2GripperEventDetectorGoal().command.SLIP_AND_ACC
+        #trigger = PR2GripperEventDetectorGoal().command.FINGER_SIDE_IMPACT_OR_SLIP_OR_ACC
+        #trigger = PR2GripperEventDetectorGoal().command.SLIP
         magnitude = 4.0
         self.command_event_detector(arm, trigger, magnitude, True, timeout=timeout)
         return self.get_gripper_event(arm)
@@ -351,61 +354,3 @@ class Uber(UberController):
             self.command_joint_pose('l', l, self.timeout, blocking=blocking)
         elif arm =="r":
             self.command_joint_pose('r', r, self.timeout, blocking=blocking)
-if __name__=="__main__":
-
-    def test_gripper():
-        rospy.loginfo("testing open gripper commands")
-        uc.close_gripper('l')
-        uc.close_gripper('r')
-        rospy.loginfo("grippers should be closed")
-        uc.open_gripper('l')
-        uc.open_gripper('r')
-        rospy.loginfo("grippers should be open")
-    
-    def test_head():
-        rospy.loginfo("testing head command")
-        uc.look_down_center()
-        raw_input("look up")
-        uc.look_forward()
-    
-    def test_torso():
-        rospy.loginfo("testing torso command")
-        uc.lift_torso()
-        raw_input("move torso down")
-        uc.down_torso()
-
-    def test_joint():
-        rospy.loginfo("testing joint control")
-        uc.move_arm_to_side("l")
-        uc.move_arm_to_side("r")
-
-    def test_gripper_event(): 
-        rospy.loginfo("requesting gripper event!-- right")
-        print uc.wait_for_gripper_event('r')
-        rospy.loginfo("requesting gripper event!-- left")
-        uc.wait_for_gripper_event('l')
-
-    def test_get_state():
-        print "testing gathering state information"
-        raw_input("get joint angles-- left")
-        print uc.get_joint_positions('l')
-
-        raw_input("get joint angles-- right")
-        print uc.get_joint_positions('r')
-
-        raw_input("get cartesian pose-- left")
-        print uc.return_cartesian_pose('l', 'base_link')
-
-        raw_input("get cartesian pose--right")
-        print uc.return_cartesian_pose('r', 'base_link')
-
-	
-    rospy.init_node("ubertest")
-    rospy.loginfo("how to use uber controller")
-    uc = Uber()
-    test_head() 
-    test_torso()
-    test_gripper()
-    test_joint()
-    test_get_state()
-    test_gripper_event()
