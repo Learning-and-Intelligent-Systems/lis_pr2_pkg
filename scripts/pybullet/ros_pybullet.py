@@ -6,6 +6,7 @@ import numpy as np
 from pybullet_tools.utils import joint_from_name, connect
 import pybullet as p
 import pybullet_data
+from lis_pr2_pkg.msg import uc_pr2 as uc_msg
 
 k=1
 ARM_JOINT_NAMES = {
@@ -18,6 +19,7 @@ ARM_JOINT_NAMES = {
 TORSO_JOINT_NAME = 'torso_lift_joint'
 
 #Setup node
+pub = rospy.Publisher('pybullet_cmds', uc_msg, queue_size=0)
 rospy.init_node("pybullet_test")
 rospy.loginfo("testing pybullet configurations")
 
@@ -70,8 +72,11 @@ for i in range(len(right_joints)):
                                         positionGain=1,velocityGain=0.1)
 
 #Tests that the robot can match the simulation position
-#TODO: Move commands to different nodes so this doesn't slow down so much
+#TODO: Move commands to different node so this doesn't slow down so much
+rate = rospy.Rate(100)
 while True:
+    msg = uc_msg()
+
     p.stepSimulation()
 
     i = 0
@@ -83,5 +88,20 @@ while True:
     for joint in range(len(right_joints)):
         r_conf.append(p.getJointState(pr2, right_joints[joint])[0])
 
-    uc.command_joint_pose('l', l_conf, time=2, blocking=True)
-    uc.command_joint_pose('r', r_conf, time=2, blocking=True)
+    msg.l_shoulder_pan_joint = l_conf[0]
+    msg.l_shoulder_lift_joint = l_conf[1]
+    msg.l_upper_arm_roll_joint = l_conf[2]
+    msg.l_elbow_flex_joint = l_conf[3]
+    msg.l_forearm_roll_joint = l_conf[4]
+    msg.l_wrist_flex_joint = l_conf[5]
+    msg.l_wrist_roll_joint = l_conf[6]
+
+    msg.r_shoulder_pan_joint = r_conf[0]
+    msg.r_shoulder_lift_joint = r_conf[1]
+    msg.r_upper_arm_roll_joint = r_conf[2]
+    msg.r_elbow_flex_joint = r_conf[3]
+    msg.r_forearm_roll_joint = r_conf[4]
+    msg.r_wrist_flex_joint = r_conf[5]
+    msg.r_wrist_roll_joint = r_conf[6]
+    pub.publish(msg)
+    rate.sleep()

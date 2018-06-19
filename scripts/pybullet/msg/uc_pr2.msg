@@ -1,0 +1,19 @@
+float32 head_pan_joint
+float32 head_tilt_joint
+
+float32 r_shoulder_pan_joint
+float32 r_shoulder_lift_joint
+float32 r_upper_arm_roll_joint
+float32 r_elbow_flex_joint
+float32 r_forearm_roll_joint
+float32 r_wrist_flex_joint
+float32 r_wrist_roll_joint
+
+float32 l_shoulder_pan_joint
+float32 l_shoulder_lift_joint
+float32 l_upper_arm_roll_joint
+float32 l_elbow_flex_joint
+float32 l_forearm_roll_joint
+float32 l_wrist_flex_joint
+float32 l_wrist_roll_joint
+
