@@ -21,7 +21,7 @@ class Accel():
             points.append(pt)
 
         print points
-        raw_input("next")
-        self.sub= rospy.Subscriber("accelerometer/l_gripper_motor", AS, self.cb, queue_size=1)
+        # raw_input("next")
+        # self.sub= rospy.Subscriber("accelerometer/l_gripper_motor", AS, self.cb, queue_size=1)
 ac = Accel()
 rospy.spin()
