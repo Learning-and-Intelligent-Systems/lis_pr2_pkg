@@ -12,8 +12,12 @@ from pr2_controllers_msgs.msg import \
         Pr2GripperCommandAction, Pr2GripperCommandGoal,\
         Pr2GripperCommandActionGoal
         
-
-from pr2_gripper_sensor_msgs.msg import * #XXX fix
+try:
+    from pr2_gripper_sensor_msgs.msg import * #XXX fix
+    GRIPPER_SENSOR = True
+except:
+    print "warning! no gripper sensor messages!"
+    GRIPPER_SENSOR = False
 
 from pr2_mechanism_msgs.srv import SwitchController, ListControllers
 from trajectory_msgs.msg import JointTrajectoryPoint
@@ -40,14 +44,15 @@ class UberController:
         JointTrajectoryAction),
     'l_joint': (
         'l_arm_controller/joint_trajectory_action',
-        JointTrajectoryAction ),
-    'l_gripper_event':(
-        'l_gripper_sensor_controller/event_detector',
-        PR2GripperEventDetectorAction), 
-    'r_gripper_event':(
-        'r_gripper_sensor_controller/event_detector',
-        PR2GripperEventDetectorAction)
-    }
+        JointTrajectoryAction )}
+    if GRIPPER_SENSOR:
+        simple_clients['l_gripper_event'] = (
+            'l_gripper_sensor_controller/event_detector',
+            PR2GripperEventDetectorAction), 
+        simple_clients['r_gripper_event'] = (
+            'r_gripper_sensor_controller/event_detector',
+             PR2GripperEventDetectorAction)
+    
 
     #XXX do subscriber callback nicely
 
@@ -83,16 +88,17 @@ class UberController:
         self.joint_velocities = {}
         self.joint_sub = rospy.Subscriber(\
                 "joint_states", JointState, self.jointCB)
-        
-        self.gripper_events_sub= {}
-        self.gripper_event = {}
-        self.gripper_events_sub['l'] = rospy.Subscriber(\
-                "/l_gripper_sensor_controller/event_detector_state",\
-                PR2GripperEventDetectorData, self.l_gripper_eventCB)
-        self.gripper_events_sub['r'] = rospy.Subscriber(\
-                "/r_gripper_sensor_controller/event_detector_state",\
-                PR2GripperEventDetectorData, self.r_gripper_eventCB)
-        
+        if GRIPPER_SENSOR: 
+            
+            self.gripper_events_sub= {}
+            self.gripper_event = {}
+            self.gripper_events_sub['l'] = rospy.Subscriber(\
+                    "/l_gripper_sensor_controller/event_detector_state",\
+                    PR2GripperEventDetectorData, self.l_gripper_eventCB)
+            self.gripper_events_sub['r'] = rospy.Subscriber(\
+                    "/r_gripper_sensor_controller/event_detector_state",\
+                    PR2GripperEventDetectorData, self.r_gripper_eventCB)
+            
         self.finished_registering()
         rospy.loginfo("done initializing Uber Controller!") 
 
